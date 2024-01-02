@@ -1,0 +1,81 @@
+Rescuing person at position (87, 89)
+------------------------------------
+Generated nodes: 3906
+Expanded nodes: 1141
+Execution time: 0.05465397099942493 seconds
+Solution length: 27
+Solution cost: 55.0
+Solution: [RIGHT, RIGHT, RIGHT, RIGHT, RIGHT, RIGHT, RIGHT, RIGHT, DOWN, RIGHT, RIGHT, RIGHT, RIGHT, RIGHT, DOWN, DOWN, DOWN, RIGHT, DOWN, RIGHT, DOWN, DOWN, DOWN, DOWN, DOWN, DOWN, DOWN]
+
+Rescuing person at position (45, 86)
+------------------------------------
+Generated nodes: 8022
+Expanded nodes: 2366
+Execution time: 0.10866558899942902 seconds
+Solution length: 42
+Solution cost: 66.0
+Solution: [RIGHT, UP, UP, UP, UP, UP, UP, RIGHT, UP, UP, RIGHT, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, RIGHT, UP, RIGHT, UP, UP, UP, UP, UP, UP, UP, RIGHT, RIGHT, RIGHT, RIGHT, RIGHT, RIGHT, RIGHT]
+
+Rescuing person at position (13, 58)
+------------------------------------
+Generated nodes: 18942
+Expanded nodes: 5608
+Execution time: 0.2692136160003429 seconds
+Solution length: 78
+Solution cost: 126.0
+Solution: [LEFT, LEFT, UP, UP, UP, UP, UP, UP, LEFT, UP, UP, UP, UP, UP, UP, LEFT, UP, UP, UP, UP, UP, UP, UP, LEFT, UP, UP, UP, LEFT, UP, LEFT, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, LEFT, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, UP]
+
+Rescuing person at position (14, 78)
+------------------------------------
+Generated nodes: 15228
+Expanded nodes: 4498
+Execution time: 0.20020295799986343 seconds
+Solution length: 67
+Solution cost: 115.0
+Solution: [RIGHT, UP, UP, UP, UP, UP, UP, RIGHT, UP, UP, RIGHT, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, RIGHT, UP, RIGHT, UP, UP, UP, UP, UP, UP, UP, UP, LEFT, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP, UP]
+
+Rescuing person at position (42, 13)
+------------------------------------
+Generated nodes: 23810
+Expanded nodes: 7078
+Execution time: 0.3575780240007589 seconds
+Solution length: 94
+Solution cost: 174.0
+Solution: [LEFT, LEFT, UP, UP, UP, UP, UP, UP, LEFT, UP, UP, UP, UP, UP, UP, LEFT, UP, UP, UP, UP, UP, UP, UP, LEFT, LEFT, LEFT, LEFT, UP, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, UP, LEFT, UP, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, UP, LEFT, UP, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, UP, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, UP, LEFT, LEFT, LEFT, LEFT, UP, LEFT, LEFT, LEFT, UP, UP, UP, LEFT, LEFT, LEFT, UP, UP, LEFT, UP]
+
+Rescuing person at position (96, 37)
+------------------------------------
+Generated nodes: 12536
+Expanded nodes: 3700
+Execution time: 0.16300754500116454 seconds
+Solution length: 58
+Solution cost: 102.0
+Solution: [LEFT, DOWN, DOWN, DOWN, DOWN, DOWN, LEFT, DOWN, DOWN, DOWN, DOWN, DOWN, DOWN, DOWN, DOWN, DOWN, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, DOWN, LEFT, LEFT, LEFT, LEFT, DOWN, DOWN, DOWN, LEFT, LEFT, LEFT, LEFT, DOWN, DOWN, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, DOWN, LEFT, LEFT, LEFT, LEFT]
+
+Rescuing person at position (92, 22)
+------------------------------------
+Generated nodes: 15939
+Expanded nodes: 4712
+Execution time: 0.21301246999973955 seconds
+Solution length: 69
+Solution cost: 137.0
+Solution: [LEFT, DOWN, DOWN, DOWN, DOWN, DOWN, LEFT, DOWN, DOWN, DOWN, DOWN, DOWN, DOWN, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, DOWN, LEFT, LEFT, LEFT, LEFT, LEFT, DOWN, LEFT, DOWN, LEFT, LEFT, DOWN, DOWN, LEFT, LEFT, LEFT, LEFT, DOWN, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT]
+
+Rescuing person at position (98, 19)
+------------------------------------
+Generated nodes: 18838
+Expanded nodes: 5576
+Execution time: 0.24794258200017794 seconds
+Solution length: 78
+Solution cost: 130.0
+Solution: [LEFT, DOWN, DOWN, DOWN, DOWN, DOWN, LEFT, DOWN, DOWN, DOWN, DOWN, DOWN, DOWN, DOWN, DOWN, DOWN, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, DOWN, LEFT, LEFT, LEFT, LEFT, DOWN, DOWN, DOWN, LEFT, LEFT, LEFT, LEFT, DOWN, DOWN, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, DOWN, LEFT, LEFT, LEFT, LEFT, DOWN, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, DOWN, LEFT, LEFT, LEFT]
+
+
+Final statistics
+----------------
+Number of rescued people: 8 of 8
+Mean number of generated nodes: 14652.625
+Mean number of expanded nodes: 4334.875
+Mean execution time: 0.20178459437511265 seconds
+Mean solution length: 64.125
+Mean solution cost: 113.125

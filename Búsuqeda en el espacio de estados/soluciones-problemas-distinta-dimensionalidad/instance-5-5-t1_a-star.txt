@@ -1,0 +1,18 @@
+Rescuing person at position (0, 0)
+----------------------------------
+Generated nodes: 29
+Expanded nodes: 14
+Execution time: 0.0007744039994577179 seconds
+Solution length: 12
+Solution cost: 12.0
+Solution: [RIGHT, RIGHT, RIGHT, RIGHT, UP, UP, UP, UP, LEFT, LEFT, LEFT, LEFT]
+
+
+Final statistics
+----------------
+Number of rescued people: 1 of 1
+Mean number of generated nodes: 29
+Mean number of expanded nodes: 14
+Mean execution time: 0.0007744039994577179 seconds
+Mean solution length: 12
+Mean solution cost: 12.0

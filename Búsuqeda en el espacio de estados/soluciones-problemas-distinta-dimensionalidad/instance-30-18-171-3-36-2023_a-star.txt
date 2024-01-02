@@ -1,0 +1,36 @@
+Rescuing person at position (25, 10)
+------------------------------------
+Generated nodes: 71
+Expanded nodes: 23
+Execution time: 0.0016206410000449978 seconds
+Solution length: 4
+Solution cost: 12.0
+Solution: [DOWN, DOWN, DOWN, LEFT]
+
+Rescuing person at position (17, 0)
+-----------------------------------
+Generated nodes: 426
+Expanded nodes: 150
+Execution time: 0.014632702999733738 seconds
+Solution length: 28
+Solution cost: 32.0
+Solution: [UP, LEFT, LEFT, UP, UP, UP, UP, LEFT, UP, UP, UP, UP, UP, UP, LEFT, LEFT, DOWN, LEFT, LEFT, DOWN, DOWN, DOWN, LEFT, DOWN, LEFT, LEFT, LEFT, DOWN]
+
+Rescuing person at position (11, 8)
+-----------------------------------
+Generated nodes: 50
+Expanded nodes: 17
+Execution time: 0.0013076670002192259 seconds
+Solution length: 14
+Solution cost: 14.0
+Solution: [UP, LEFT, LEFT, UP, UP, UP, UP, LEFT, UP, UP, UP, UP, UP, UP]
+
+
+Final statistics
+----------------
+Number of rescued people: 3 of 3
+Mean number of generated nodes: 182.33333333333334
+Mean number of expanded nodes: 63.333333333333336
+Mean execution time: 0.005853670333332654 seconds
+Mean solution length: 15.333333333333334
+Mean solution cost: 19.333333333333332

@@ -1,0 +1,13 @@
+Rescuing person at position (0, 25)
+-----------------------------------
+Generated nodes: 47
+Expanded nodes: 24
+Execution time: 0.0010104800003318815 seconds
+Solution length: 0
+Solution cost: 0.0
+Solution: []
+
+
+Final statistics
+----------------
+Number of rescued people: 0 of 1
