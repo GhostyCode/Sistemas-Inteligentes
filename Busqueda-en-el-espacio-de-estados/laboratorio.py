@@ -317,7 +317,7 @@ class AEstrella(Busqueda):
 
 if __name__ == '__main__':
 
-    problema = Problema("Problema-distinta-dimension/instance-20-20-33-8-33-2023.json")
+    problema = Problema("Busqueda-en-el-espacio-de-estados/Problema-distinta-dimension/instance-20-20-33-8-33-2023.json")
 
     #Metodo de busqueda, si la busqueda es limitada se debe ingresar el limite de profundidad 
     # busqueda = BusquedaProfundidadLimitada(problema, limite=20)
