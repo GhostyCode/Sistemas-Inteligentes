@@ -1,242 +1,172 @@
-import json
 import random
+import json
+import time
 
-
-with open("Aprendizaje-por-refuerzo/initial-rl-instances/larger-rl.json", 'r', encoding="utf8") as file:
-    t=json.load(file)
-
-class Colores:
-    RESET = "\033[0m"
+class Color:
+    AMARILLO = "\033[93m"
+    CYAN = "\033[96m"
+    MAGENTA = "\033[95m"
     NEGRO = "\033[30m"
     ROJO = "\033[91m"
     VERDE = "\033[92m"
-    AMARILLO = "\033[93m"
+    RESET = "\033[0m"
     AZUL = "\033[94m"
-    MAGENTA = "\033[95m"
-    CYAN = "\033[96m"
 
 def texto_coloreado(texto, color):
-    return f"{color}{texto}{Colores.RESET}"
+    return f"{color}{texto}{Color.RESET}"
+
+class Estado:
+    def __init__(self, posicion):
+        self.posicion = posicion
+
+    #Acciones de movimiento del robot
+    def acciones(self, accion):
+        if accion==0:
+            nueva_pos = ((self.posicion[0] - 1,self.posicion[1]))
+        elif accion==1:
+            nueva_pos = ((self.posicion[0], self.posicion[1] + 1))
+        elif accion==2:
+            nueva_pos = ((self.posicion[0] + 1,self.posicion[1]))
+        elif accion==3:
+            nueva_pos = ((self.posicion[0], self.posicion[1] - 1))
+
+        return Estado(nueva_pos)
 
 class Problema:
-    
-    def _init_(self):
-        self.ciudad=t["city"]
-        self.filas=t["city"]["rows"]
-        self.columnas=t["city"]["columns"]
-        self.muros=t["city"]["blocked"]
-        self.salida=t["departure"]
-        self.peligro=t["dangers"]
-        self.peligro_fatal=t["fatal_dangers"]
-        self.fin=t["trapped"]
+    def __init__(self, problema):
+        with open(problema, 'r') as file:
+            self.nuevo_diccionario = json.load(file)
 
-    def mapa(self):
-        matrizQ = [[ "⬜" for _ in range(t["city"]["columns"])] for _ in range(t["city"]["rows"])]
+        self.nfilas=self.nuevo_diccionario["city"]["rows"]
+        self.ncols=self.nuevo_diccionario["city"]["columns"]
+        self.bloqueados=self.nuevo_diccionario["city"]["blocked"]
+        self.partida=self.nuevo_diccionario["departure"]
+        self.peligro=self.nuevo_diccionario["dangers"]
+        self.peligro_fatal=self.nuevo_diccionario["fatal_dangers"]
+        self.atrapados=self.nuevo_diccionario["trapped"]
 
-        partida_fila, partida_columna = t["departure"]
-        matrizQ[partida_fila][partida_columna] = "🌌"
+    def QTabla(self):
+        QTabla = [[[0.0 for _ in range(4)] for _ in range(self.ncols)] for _ in range(self.nfilas)]
 
-        for bloqueo in t["city"]["blocked"]:
-            fila, columna = bloqueo
-            matrizQ[fila][columna] = "🛑"
-        for peligro in t["dangers"]:
-            fila, columna = peligro
-            matrizQ[fila][columna] = "🚸"
-        for objetivo in t["trapped"]:
-            fila, columna, a= objetivo
-            matrizQ[fila][columna] = "👨‍💻"
-        for Muerte in t["fatal_dangers"]:
-            fila, columna, a = Muerte
-            matrizQ[fila][columna] = "💀"
+        for objetivo in self.atrapados:
+            fila, columna, recompensa = objetivo
+            QTabla[fila][columna] = [recompensa]
 
-        for fila in matrizQ:
-            for elemento in fila:
-                print(elemento, end=" ")  # Usamos end=" " para imprimir en la misma línea
-            print()
-
-class QLearn:
-    def _init_(self):
-        self.ciudad=t["city"]
-        self.filas=t["city"]["rows"]
-        self.columnas=t["city"]["columns"]
-        self.muros=t["city"]["blocked"]
-        self.salida=t["departure"]
-        self.peligro=t["dangers"]
-        self.peligro_fatal=t["fatal_dangers"]
-        self.fin=t["trapped"]
-
-    def hacerQTabla(self):
-        QTabla = [[[0.0 for _ in range(4)] for _ in range(t["city"]["columns"])] for _ in range(t["city"]["rows"])]
-
-        for objetivo in t["trapped"]:
-            fila, columna, valor= objetivo
-            QTabla[fila][columna] = [valor]
-
-        for Muerte in t["fatal_dangers"]:
-            fila, columna, valor = Muerte
-            QTabla[fila][columna] = [valor]
+        for muerte in self.peligro_fatal:
+            fila, columna, recompensa = muerte
+            QTabla[fila][columna] = [recompensa]
 
         return QTabla
-
+    
     def finales(self):
-        lista_buenos = []
-        lista_malos = []
-        lista_peligros = []
-        for objetivo in t["trapped"]:
-            fila, columna, valor= objetivo
-            lista_buenos.append([fila,columna])
-
-        for Muerte in t["fatal_dangers"]:
-            fila, columna, valor = Muerte
-            lista_malos.append([fila,columna])
-
-        for peligro in t["dangers"]:
-            fila, columna= peligro
-            lista_peligros.append([fila,columna])
+        lista_buenos = [[fila, columna] for fila, columna, recompensa in self.atrapados]
+        lista_malos = [[fila, columna] for fila, columna, recompensa in self.peligro_fatal]
+        # lista_peligros = [[fila, columna] for fila, columna in self.peligro]
 
         return lista_buenos, lista_malos
 
-    def busqueda(self, gamma, r, alfa, bucle):
-        aux = QLearn()
-        QTabla = aux.hacerQTabla()
-        finalesBuenos, finalesMalos= aux.finales()
 
-        for i in range(bucle):
-            x, y = t["departure"]
-            vida= True
+class Agente():
+    def __init__(self, problema):
+        self.problema = problema
+
+    
+    def busqueda(self, gamma, r, alfa, iteraciones, exploracion = True):
+        inicio_tiempo = time.time()
+        QTabla = self.problema.QTabla()
+        finales_buenos, finales_malos = self.problema.finales()
+
+        for _ in range(iteraciones):
+            estado_actual = Estado(posicion=self.problema.partida)
+            vida = True
             while vida:
-                #___________
-                #Elección de forma de moverse
-                #__________print("__________", i)
-                ran1=random.random()
-                if gamma > ran1:
-                    match QTabla[x][y].index(max(QTabla[x][y])):
-                        case 0:#Arriba
-                            if (x > 0) and ([x-1, y] not in t["city"]["blocked"]):
-                                res = aux.recompensa(x-1, y, r)
-                                QTabla[x][y][0] = (1-alfa)* QTabla[x][y][0] + alfa * (res + gamma * max(QTabla[x-1][y]))
-                                x=x-1
-                            else:
-                                res = aux.recompensa(x, y, r)
-                                QTabla[x][y][0] = (1-alfa)* QTabla[x][y][0] + alfa * (res)
-                        case 1:#Derecha
-                            if (y+1 < t["city"]["columns"]) and ([x, y+1] not in t["city"]["blocked"]):
-                                res = aux.recompensa(x, y+1, r)
-                                QTabla[x][y][1] = (1-alfa)* QTabla[x][y][1] + alfa * (res + gamma * max(QTabla[x][y+1]))
-                                y=y+1
-                            else:
-                                res = aux.recompensa(x, y, r)
-                                QTabla[x][y][1] = (1-alfa)* QTabla[x][y][1] + alfa * (res)
-                        case 2:#Abajo
-                            if (x+1 < t["city"]["rows"]) and ([x+1, y] not in t["city"]["blocked"]):
-                                res = aux.recompensa(x+1, y, r)
-                                QTabla[x][y][2] = (1-alfa)* QTabla[x][y][2] + alfa * (res + gamma * max(QTabla[x+1][y]))
-                                x=x+1
-                            else:
-                                res = aux.recompensa(x, y, r)
-                                QTabla[x][y][2] = (1-alfa)* QTabla[x][y][2] + alfa * (res)
-                        case 3:#Izquierda
-                            if (y > 0) and ([x, y-1] not in t["city"]["blocked"]):
-                                res = aux.recompensa(x, y-1, r)
-                                QTabla[x][y][3] = (1-alfa)* QTabla[x][y][3] + alfa * (res + gamma * max(QTabla[x][y-1]))
-                                y=y-1
-                            else:
-                                res = aux.recompensa(x, y, r)
-                                QTabla[x][y][3] = (1-alfa)* QTabla[x][y][3] + alfa * (res)
 
+                if exploracion and random.uniform(0, 1) < gamma:
+                    #Exploración
+                    direccion = QTabla[estado_actual.posicion[0]][estado_actual.posicion[1]].index(max(QTabla[estado_actual.posicion[0]][estado_actual.posicion[1]]))
                 else:
-                    numeros = [numero for numero in range(0, 3) if numero != QTabla[x][y].index(max(QTabla[x][y]))]
-                    match random.choice(numeros):
-                        case 0:#Arriba
-                            if (x > 0) and ([x-1, y] not in t["city"]["blocked"]):
-                                res = aux.recompensa(x-1, y, r)
-                                QTabla[x][y][0] = (1-alfa)* QTabla[x][y][0] + alfa * (res + gamma * max(QTabla[x-1][y]))
-                                x=x-1
-                            else:
-                                res = aux.recompensa(x, y, r)
-                                QTabla[x][y][0] = (1-alfa)* QTabla[x][y][0] + alfa * (res)
-                        case 1:#Derecha
-                            if (y+1 < t["city"]["columns"]) and ([x, y+1] not in t["city"]["blocked"]):
-                                res = aux.recompensa(x, y+1, r)
-                                QTabla[x][y][1] = (1-alfa)* QTabla[x][y][1] + alfa * (res + gamma * max(QTabla[x][y+1]))
-                                y=y+1
-                            else:
-                                res = aux.recompensa(x, y, r)
-                                QTabla[x][y][1] = (1-alfa)* QTabla[x][y][1] + alfa * (res)
-                        case 2:#Abajo
-                            if (x+1 < t["city"]["rows"]) and ([x+1, y] not in t["city"]["blocked"]):
-                                res = aux.recompensa(x+1, y, r)
-                                QTabla[x][y][2] = (1-alfa)* QTabla[x][y][2] + alfa * (res + gamma * max(QTabla[x+1][y]))
-                                x=x+1
-                            else:
-                                res = aux.recompensa(x, y, r)
-                                QTabla[x][y][2] = (1-alfa)* QTabla[x][y][2] + alfa * (res)
-                        case 3:#Izquierda
-                            if (y > 0) and ([x, y-1] not in t["city"]["blocked"]):
-                                res = aux.recompensa(x, y-1, r)
-                                QTabla[x][y][3] = (1-alfa)* QTabla[x][y][3] + alfa * (res + gamma * max(QTabla[x][y-1]))
-                                y=y-1
-                            else:
-                                res = aux.recompensa(x, y, r)
-                                QTabla[x][y][3] = (1-alfa)* QTabla[x][y][3] + alfa * (res)
-                if ([x, y] in finalesBuenos) or ([x, y] in finalesMalos):
-                    vida=False
-        return QTabla
+                    numeros = [numero for numero in range(4) if numero != QTabla[estado_actual.posicion[0]][estado_actual.posicion[1]].index(max(QTabla[estado_actual.posicion[0]][estado_actual.posicion[1]]))]
+                    direccion = random.choice(numeros)
+                
+                #Explotación
+                if 0 <= direccion <= 3:
+                    nueva_pos = estado_actual.acciones(direccion).posicion
 
-    def recompensa(self, x, y, res):
-        aux = QLearn()
-        finalesBuenos, finalesMalos = aux.finales()
-        if ([x, y] in finalesBuenos):
-            for objBueno in t["trapped"]:
-                fila, columna, r= objBueno
-                if (x == fila) and (y == columna):
-                    return r
-        if ([x, y] in finalesMalos):
-            for objMalo in t["fatal_dangers"]:
-                fila, columna, r= objMalo
-            if (x == fila) and (y == columna):
-                return r
-        if([x, y] in t["dangers"]):
+                    if 0 <= nueva_pos[0] < self.problema.nfilas and 0 <= nueva_pos[1] < self.problema.ncols and list(nueva_pos) not in self.problema.bloqueados:
+                        res = self.recompensa(nueva_pos[0], nueva_pos[1], r) 
+                        QTabla[estado_actual.posicion[0]][estado_actual.posicion[1]][direccion ] = (1 - alfa) * QTabla[estado_actual.posicion[0]][estado_actual.posicion[1]][direccion] + alfa * (res + gamma * max(QTabla[nueva_pos[0]][nueva_pos[1]]))
+                        estado_actual = Estado(posicion=nueva_pos)
+                    else:
+                        res = self.recompensa(estado_actual.posicion[0], estado_actual.posicion[1], r)
+                        QTabla[estado_actual.posicion[0]][estado_actual.posicion[1]][direccion] = (1 - alfa) * QTabla[estado_actual.posicion[0]][estado_actual.posicion[1]][direccion] + alfa * (res)
+                if list(estado_actual.posicion) in finales_buenos or list(estado_actual.posicion) in finales_malos:
+                    vida = False
+        tiempo_ejecucion = time.time() - inicio_tiempo
+        print("Tiempo de ejecución: ", tiempo_ejecucion) 
+
+        return QTabla
+    
+    def evaluacionPoliticas(self):
+        pass
+
+    def mejoraPolitica(self):
+        pass
+
+    def iteracionPolitica(self):
+        pass      
+
+    
+    def recompensa(self, x, y, recompensa):
+
+        posiciones_buenas = {tuple(obj[:2]): obj[2] for obj in self.problema.atrapados}
+        posiciones_malas = {tuple(obj[:2]): obj[2] for obj in self.problema.peligro_fatal}
+
+        if (x, y) in posiciones_buenas:
+            return posiciones_buenas[(x, y)]
+
+        if (x, y) in posiciones_malas:
+            return posiciones_malas[(x, y)]
+
+        if (x, y) in self.problema.peligro:
             return -5
 
-        return res
+        return recompensa
+    
+    def formatearElemento(self, elemento, decimales):
+        try:
+            if isinstance(elemento, (int, float)):
+                return f"{elemento:.{decimales}f}"
+            elif isinstance(elemento, list):
+                return [self.formatearElemento(e, decimales) for e in elemento]
+            else:
+                raise TypeError("Tipo de dato no admitido para formateo.")
+        except Exception as e:
+            print(f"Error al formatear el elemento: {e}")
+            return elemento
 
-    def formatear_vector(self, vector, decimales):
-        aux = QLearn()
-        if isinstance(vector, list):
-            return [aux.formatear_vector(elemento, decimales) for elemento in vector]
-        elif isinstance(vector, (int, float)):
-            return "{: .{}f}".format(vector, decimales)
-        else:
-            return vector
+    def mostrarQTabla(self, QTabla):
 
-    def imprimirQTabla(self, QTabla):
-        aux = QLearn()
-        print("    🢁       🢂       🢃       🢀         🢁       🢂       🢃       🢀​")
-        finalesBuenos, finalesMalos = aux.finales()
-        i=0
-        for fila in QTabla:
-            j=0
-            for elemento in aux.formatear_vector(fila, 2):
-                if [i, j] in t["city"]["blocked"]:
-                    print(texto_coloreado(elemento, Colores.NEGRO),end=" ")
+        finales_buenos, finales_malos = self.problema.finales()
+
+        for i, fila in enumerate(QTabla):
+            for j, elemento in enumerate(self.formatearElemento(fila, 2)):
+                if [i, j] in self.problema.bloqueados:
+                    print(texto_coloreado(elemento, Color.MAGENTA), end=" ")
                 else:
-                    if [i, j] in finalesBuenos:
-                        print(texto_coloreado(elemento, Colores.AZUL),end="                          ")
+                    if [i, j] in finales_buenos:
+                        print(texto_coloreado(elemento, Color.AZUL), end="                          ")
+                    elif [i, j] in finales_malos:
+                        print(texto_coloreado(elemento, Color.ROJO), end="                          ")
+                    elif [i, j] in self.problema.peligro:
+                        print(texto_coloreado(elemento, Color.AMARILLO), end=" ")
+                    elif [i, j] == self.problema.partida:
+                        print(texto_coloreado(elemento, Color.VERDE), end=" ")
                     else:
-                        if [i, j] in finalesMalos:
-                            print(texto_coloreado(elemento, Colores.ROJO),end="                          ")
-                        else:
-                            if  [i, j] in t["dangers"]:
-                                print(texto_coloreado(elemento, Colores.AMARILLO),end=" ")
-                            else:
-                                if [i, j] == t["departure"]:
-                                    print(texto_coloreado(elemento, Colores.VERDE),end=" ")
-                                else: print(elemento, end=" ")  # Usamos end=" " para imprimir en la misma línea
-                j=j+1
+                        print(elemento, end=" ")  # Usamos end=" " para imprimir en la misma línea
             print()
-            i=i+1
 
-primer = QLearn()
-a=primer.busqueda(0.8, -0.05, 0.1, 10000)
-primer.imprimirQTabla(a)
+
+problema = Problema("Aprendizaje-por-refuerzo/initial-rl-instances/larger-rl.json")
+agente = Agente(problema)
+q_tabla_resultante = agente.busqueda(0.8, -0.05, 0.1, 10000)
+agente.mostrarQTabla(q_tabla_resultante)

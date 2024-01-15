@@ -3,6 +3,11 @@ from abc import ABC, abstractmethod
 import time
 from queue import PriorityQueue
 
+
+# Variables globales para los resultados
+
+
+
 class Accion:
     def __init__(self, movimiento, costo):
         self.movimiento = movimiento
@@ -50,10 +55,9 @@ class Problema:
         self.partida = self.new_dictionary['departure']
         self.peligro = set(map(tuple, self.new_dictionary['dangers']))
         self.atrapados = list(map(tuple, self.new_dictionary['trapped']))        
-
         
     #Retornar la lista de sucerores
-    def generarSucesores(self, nodo, limite=None):
+    def generarSucesores(self, nodo):
         sucesores = []
         estado_actual = nodo.estado
 
@@ -82,26 +86,21 @@ class Problema:
                     altura=nodo.altura + 1,
                 )
 
-                #Si el limite es None, no se aplica la busqueda limitada
-                if limite is None:
-                    sucesores.append(nuevo_nodo)
-                elif nuevo_nodo.altura <= limite:
-                    sucesores.append(nuevo_nodo)
+                sucesores.append(nuevo_nodo)
 
         return sucesores
-    
-
 
 
 class Busqueda:
-    def __init__(self, problema, limite=None):
+    def __init__(self, problema):
         self.problema = problema
-        self.indice_objetivo_actual = 0
-        self.busquedad_tipo_limitada = True if isinstance(self, BusquedaProfundidadLimitada) else False
-        self.busquedad_tipo_iterativa = True if isinstance(self, BusquedaProfundidadIterativa) else False
-        self.limite = limite
+        self.total_nodos_generados = 0
+        self.total_nodos_expandidos = 0
+        self.total_tiempo_ejecucion = 0
+        self.total_solucion_length = 0
+        self.total_solucion_costo = 0
 
-    def insertar(self, nodo, abiertos):
+    def insertar(self, nodo, abiertos, objetivo):
         pass
 
     def eliminar(self, abiertos):
@@ -127,7 +126,7 @@ class Busqueda:
         # abiertos = [nodo_inicial]
 
         abiertos = self.inicializarAbiertos()
-        self.insertar(nodo_inicial, abiertos)
+        self.insertar(nodo_inicial, abiertos, objetivo)
         cerrados = set()
 
         nodos_expandidos = 0
@@ -150,65 +149,34 @@ class Busqueda:
                 tiempo_ejecucion = time.time() - inicio_tiempo
                         
                 # Imprimir resultados
-                print("Nodos generados:", nodos_generados)
-                print("Número de nodos expandidos:", nodos_expandidos)
-                print("Tiempo de ejecución:", tiempo_ejecucion)
-                print("Profundidad de la solución:", nodo_final.altura)
-                print("Costo de la solución:", nodo_final.costo)
-                print("Camino de la solución:", camino)
+                print("Generated nodes:", nodos_generados)
+                print("Expanded nodes:", nodos_expandidos)
+                print("Execution time:", tiempo_ejecucion)
+                print("Solution lengt:", nodo_final.altura)
+                print("Solution cost:", nodo_final.costo)
+                print("Solution:", camino)
                 print("")
-                # print("Recorrido de la solución:")
 
-                if self.indice_objetivo_actual < len(self.problema.atrapados) - 1:
-                    self.indice_objetivo_actual += 1
+                self.total_nodos_generados += nodos_generados
+                self.total_nodos_expandidos += nodos_expandidos
+                self.total_tiempo_ejecucion += tiempo_ejecucion
+                self.total_solucion_length += nodo_final.altura
+                self.total_solucion_costo += nodo_final.costo
+                
                 return camino
                 
             # Compruebo si no esta cerrado
             if not self.estaCerrado(nodo_actual.estado.posicion, cerrados):
                 # Lo añado a los cerrados para no volver a expandirlos
                 cerrados.add(nodo_actual.estado.posicion)
-
-                # Por cada sucesor
-                # Meto en la lista de nodos abiertos el sucesor
-                if self.busquedad_tipo_limitada:
-                    # Expando, es decir, saco los sucesores
-                    sucesores = self.problema.generarSucesores(nodo_actual, self.limite)
-                    for sucesor in sucesores:
-                        self.insertar(sucesor, abiertos)
-                        nodos_generados += 1
-
-                elif self.busquedad_tipo_iterativa:
-                    # Expando, es decir, saco los sucesores
-                    """Algoritmo de Iterative Deepening Search."""
-                    #Inicializa la profundidad
-                    self.limite = 0
-                    #Revisa si hay resultados
-                    resultado = self.problema.generarSucesores(nodo_actual, self.limite)
-
-                    for sucesor in resultado:
-                        print("Sucesor:", sucesor.estado.posicion)
-                        self.insertar(sucesor, abiertos)
-                        nodos_generados += 1
-                        
-                    #Itera hasta encontrar una solución
-                    while not resultado:
-                        #Agrega una profundidad más
-                        self.limite += 1
-                        #Revisa el resultado
-                        resultado = self.problema.generarSucesores(nodo_actual, self.limite)
-                        for sucesor in resultado:
-                            self.insertar(sucesor, abiertos)
-                            nodos_generados += 1
-                else:
-                    # Expando, es decir, saco los sucesores
-                    sucesores = self.problema.generarSucesores(nodo_actual)
-                    for sucesor in sucesores:
-                        self.insertar(sucesor, abiertos)
-                        nodos_generados += 1
+                
+                # Expando, es decir, saco los sucesores
+                sucesores = self.problema.generarSucesores(nodo_actual)
+                for sucesor in sucesores:
+                    self.insertar(sucesor, abiertos, objetivo)
+                    nodos_generados += 1
 
                 nodos_expandidos += 1
-
-                
 
         # print("No se encontró un camino = busqueda.buscar(estado_objetivo).")
         return None
@@ -219,9 +187,9 @@ class Busqueda:
 
 
 
-class BusquedaAnchura(Busqueda):
+class BusquedaAnchura(Busqueda): #FIFO
 
-    def insertar(self, nodo, abiertos):
+    def insertar(self, nodo, abiertos, objetivo):
         abiertos.append(nodo)
 
     def eliminar(self, abiertos):
@@ -230,9 +198,9 @@ class BusquedaAnchura(Busqueda):
     def inicializarAbiertos(self):
         return []
 
-class BusquedaProfundidad(Busqueda):
+class BusquedaProfundidad(Busqueda): #LIFO
 
-    def insertar(self, nodo, abiertos):
+    def insertar(self, nodo, abiertos, objetivo):
         abiertos.insert(0, nodo)
 
     def eliminar(self, abiertos):
@@ -241,45 +209,40 @@ class BusquedaProfundidad(Busqueda):
     def inicializarAbiertos(self):
         return []
     
-class BusquedaProfundidadLimitada(Busqueda):
+class BusquedaProfundidadLimitada(BusquedaProfundidad):
 
-    def insertar(self, nodo, abiertos):
-        abiertos.insert(0, nodo)
+    def __init__(self, problema, limite=None):
+        super().__init__(problema)
+        self.limite = limite
 
-    def eliminar(self, abiertos):
-        return abiertos.pop(0)
+    def insertar(self, nodo, abiertos, objetivo):
+        if nodo.altura <= self.limite:
+            abiertos.insert(0, nodo)
     
-    def inicializarAbiertos(self):
-        return []
-    
-class BusquedaProfundidadIterativa(Busqueda):
+class BusquedaProfundidadIterativa(BusquedaProfundidadLimitada):
 
-    def insertar(self, nodo, abiertos):
-        abiertos.insert(0, nodo)
-
-    def eliminar(self, abiertos):
-        return abiertos.pop(0)
-    
-    def inicializarAbiertos(self):
-        return []
+    def buscar(self, objetivo):
+        self.limite = 1
+        while True:
+            camino = super().buscar(objetivo)
+            if camino:
+                return camino
+            else:
+                self.limite += 1
 
 
 class PrimeroMejor(Busqueda):
-    def insertar(self, nodo, abiertos):
+    def insertar(self, nodo, abiertos, objetivo):
         # Utilizando PriorityQueue solo para PrimeroMejor
-        abiertos.put((self.heuristica(nodo), nodo))
+        abiertos.put((self.heuristica(nodo, objetivo), nodo))
 
     def eliminar(self, abiertos):
         # Eliminar y devolver el primer elemento de la lista (el de menor heurística)
-        if not abiertos.empty():
-            return abiertos.get()[1]
-        else:
-            return abiertos.get()
+        return abiertos.get()[1]
         
-    def heuristica(self, nodo):
+    def heuristica(self, nodo, objetivo):
         # Implementación de la heurística (distancia de Manhattan)
-        objetivo = self.problema.atrapados[self.indice_objetivo_actual]
-        return abs(nodo.estado.posicion[0] - objetivo[0]) + abs(nodo.estado.posicion[1] - objetivo[1])
+        return abs(nodo.estado.posicion[0] - objetivo.posicion[0]) + abs(nodo.estado.posicion[1] - objetivo.posicion[1])
 
     def inicializarAbiertos(self):
         return PriorityQueue()
@@ -287,25 +250,22 @@ class PrimeroMejor(Busqueda):
 
 class AEstrella(Busqueda):
 
-    def insertar(self, nodo, abiertos):
+    def insertar(self, nodo, abiertos, objetivo):
         # Utilizando PriorityQueue solo para AEstrella
-        costoNodoHeuristica = self.f(nodo)
+        costoNodoHeuristica = self.f(nodo, objetivo)
         abiertos.put((costoNodoHeuristica, nodo))
 
     def eliminar(self, abiertos):
-        if not abiertos.empty():
-            return abiertos.get()[1]
-        else:
-            return abiertos.get()
+        return abiertos.get()[1]
         
-    def f(self, nodo):
+        
+    def f(self, nodo, objetivo):
         # Función f(n) = g(n) + h(n), donde g(n) es el costo acumulado y h(n) es la heurística
-        return nodo.costo + self.heuristica(nodo)
+        return nodo.costo + self.heuristica(nodo, objetivo)
     
-    def heuristica(self, nodo):
+    def heuristica(self, nodo, objetivo):
         # Implementación de la heurística (distancia de Manhattan)
-        objetivo = self.problema.atrapados[self.indice_objetivo_actual]
-        return abs(nodo.estado.posicion[0] - objetivo[0]) + abs(nodo.estado.posicion[1] - objetivo[1])
+        return abs(nodo.estado.posicion[0] - objetivo.posicion[0]) + abs(nodo.estado.posicion[1] - objetivo.posicion[1])
     
     def inicializarAbiertos(self):
         return PriorityQueue()
@@ -317,13 +277,27 @@ class AEstrella(Busqueda):
 
 if __name__ == '__main__':
 
-    problema = Problema("Busqueda-en-el-espacio-de-estados/Problema-distinta-dimension/instance-20-20-33-8-33-2023.json")
+    problema = Problema("Problema-distinta-dimension/instance-20-20-33-8-33-2023.json")
 
     #Metodo de busqueda, si la busqueda es limitada se debe ingresar el limite de profundidad 
-    # busqueda = BusquedaProfundidadLimitada(problema, limite=20)
-    busqueda = BusquedaProfundidad(problema)
+    busqueda = AEstrella(problema)
+    # busqueda = BusquedaProfundidad(problema)
+
+    total_rescatados = 0
 
     for atrapado in problema.atrapados:
+        total_rescatados += 1
         estado_objetivo = Estado(atrapado)
         print("Objetivo:", estado_objetivo.posicion)
         camino = busqueda.buscar(estado_objetivo)
+
+    
+    # Imprimir estadísticas finales
+    print("\nFinal statistics")
+    print("----------------")
+    print("Number of rescued people:", total_rescatados , "of", len(problema.atrapados))
+    print("Mean number of generated nodes:", int(busqueda.total_nodos_generados / len(problema.atrapados)))
+    print("Mean number of expanded nodes:", busqueda.total_nodos_expandidos / len(problema.atrapados))
+    print("Mean execution time:", busqueda.total_tiempo_ejecucion / len(problema.atrapados), "seconds")
+    print("Mean solution length:", busqueda.total_solucion_length / len(problema.atrapados))
+    print("Mean solution cost:", busqueda.total_solucion_costo / len(problema.atrapados))
