@@ -4,10 +4,6 @@ import time
 from queue import PriorityQueue
 
 
-# Variables globales para los resultados
-
-
-
 class Accion:
     def __init__(self, movimiento, costo):
         self.movimiento = movimiento
@@ -60,11 +56,11 @@ class Problema:
     def generarSucesores(self, nodo):
         sucesores = []
         estado_actual = nodo.estado
+        
+        acciones_posibles = ["Arriba", "Derecha", "Abajo", "Izquierda"] #Lista de acciones posibles
 
-        acciones_posibles = ["Arriba", "Derecha", "Abajo", "Izquierda"]
-
-        for accion in acciones_posibles:
-            nuevo_estado = estado_actual.acciones(accion)
+        for accion in acciones_posibles: # Derecha - 
+            nuevo_estado = estado_actual.acciones(accion) # 2,1
             nueva_posicion = nuevo_estado.posicion
 
             if (
@@ -124,8 +120,10 @@ class Busqueda:
         )
 
         # abiertos = [nodo_inicial]
+        # Santander Iglesias
 
-        abiertos = self.inicializarAbiertos()
+
+        abiertos = self.inicializarAbiertos() # Inicializar la lista de abiertos
         self.insertar(nodo_inicial, abiertos, objetivo)
         cerrados = set()
 
@@ -187,10 +185,10 @@ class Busqueda:
 
 
 
-class BusquedaAnchura(Busqueda): #FIFO
+class BusquedaAnchura(Busqueda): #FIFO - Cola
 
     def insertar(self, nodo, abiertos, objetivo):
-        abiertos.append(nodo)
+        abiertos.append(nodo) #Inserta al final de la lista
 
     def eliminar(self, abiertos):
         return abiertos.pop(0)
@@ -198,10 +196,10 @@ class BusquedaAnchura(Busqueda): #FIFO
     def inicializarAbiertos(self):
         return []
 
-class BusquedaProfundidad(Busqueda): #LIFO
+class BusquedaProfundidad(Busqueda): #LIFO - Pila
 
     def insertar(self, nodo, abiertos, objetivo):
-        abiertos.insert(0, nodo)
+        abiertos.insert(0, nodo) #Inserta al inicio de la lista
 
     def eliminar(self, abiertos):
         return abiertos.pop(0)
@@ -258,7 +256,6 @@ class AEstrella(Busqueda):
     def eliminar(self, abiertos):
         return abiertos.get()[1]
         
-        
     def f(self, nodo, objetivo):
         # Función f(n) = g(n) + h(n), donde g(n) es el costo acumulado y h(n) es la heurística
         return nodo.costo + self.heuristica(nodo, objetivo)
@@ -271,16 +268,13 @@ class AEstrella(Busqueda):
         return PriorityQueue()
         
 
-# Iterar los atrapados, porque solo esta accediendo al primer objetivo en la heuristica(listo)
-# Utilizar una cola de priorida para para los algoritmos de Primero al Mejor y A Estrella, utilizando la libreria PriorityQueue(listo)
-
 
 if __name__ == '__main__':
 
-    problema = Problema("Problema-distinta-dimension/instance-20-20-33-8-33-2023.json")
+    problema = Problema("Busqueda-en-el-espacio-de-estados/Problema-distinta-dimension/instance-50-75-563-4-563-2023.json")
 
     #Metodo de busqueda, si la busqueda es limitada se debe ingresar el limite de profundidad 
-    busqueda = AEstrella(problema)
+    busqueda = BusquedaProfundidadIterativa(problema)
     # busqueda = BusquedaProfundidad(problema)
 
     total_rescatados = 0
